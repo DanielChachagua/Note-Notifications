@@ -1,0 +1,13 @@
+.env
+
+*.db
+
+.air.toml
+
+tmp
+
+.vscode
+
+command.txt
+
+__debug*
