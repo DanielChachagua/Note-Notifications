@@ -12,11 +12,12 @@ import (
 // Recibe el contenedor de dependencias para acceder a los servicios necesarios.
 func NewAddCmd(note *services.NoteService) *cobra.Command {
 	var ( // Declarar variables para almacenar los valores de las flags
-		title       string
-		description string
+		title    string
+		description    string
 		url         string
 		dateStr     string
 		timeStr     string
+		warn string
 	)
 
 	cmd := &cobra.Command{
@@ -25,9 +26,12 @@ func NewAddCmd(note *services.NoteService) *cobra.Command {
 		Long:  "Agregar una nueva nota con título, descripción, URL, fecha y hora usando flags.",
 		Args:  cobra.NoArgs, // No esperamos argumentos posicionales
 		Run: func(cmd *cobra.Command, args []string) {
-			// Validar que las flags requeridas no estén vacías
-			if title == "" || description == "" || dateStr == "" || timeStr == "" {
-				fmt.Println("Error: Los campos --title, --description, --date y --time son requeridos.")
+
+			warnValue := true
+			if warn != "" {
+				warnValue = warn == "true" || warn == "1" || warn == "t"
+			} else if warn != "true" && warn != "false" && warn != "1" && warn != "0" && warn != "t" && warn != "f" {
+				fmt.Println("Error: El valor de --warn debe ser 'true', 'false', '1', '0', 't' o 'f'.")
 				cmd.Help()
 				return
 			}
@@ -35,13 +39,13 @@ func NewAddCmd(note *services.NoteService) *cobra.Command {
 			// 1. Parsear y validar datos de las flags
 			tDate, err := schemas.ToCustomDate(dateStr)
 			if err != nil {
-				fmt.Printf("Error en la fecha: %v (esperado formato dd-mm-yyyy)\n", err)
+				fmt.Printf("Error en la fecha: %v\n", err)
 				return
 			}
 
 			tTime, err := schemas.ToCustomTime(timeStr)
 			if err != nil {
-				fmt.Printf("Error en la hora: %v (esperado formato hh:mm)\n", err)
+				fmt.Printf("Error en la hora: %v\n", err)
 				return
 			}
 
@@ -51,6 +55,7 @@ func NewAddCmd(note *services.NoteService) *cobra.Command {
 				Url:         &url, // La URL puede ser opcional, por eso se pasa su puntero
 				Date:        tDate,
 				Time:        tTime,
+				Warn: warnValue,
 			}
 
 			if err := noteData.Validate(); err != nil {
@@ -75,6 +80,7 @@ func NewAddCmd(note *services.NoteService) *cobra.Command {
 	cmd.Flags().StringVarP(&url, "url", "u", "", "URL asociada a la nota (opcional)")
 	cmd.Flags().StringVarP(&dateStr, "date", "d", "", "Fecha de la nota en formato dd-mm-yyyy (requerido)")
 	cmd.Flags().StringVarP(&timeStr, "time", "t", "", "Hora de la nota en formato hh:mm (requerido)")
+	cmd.Flags().StringVarP(&warn, "warn", "w", "", "Warn(aviso) de la nota (opcional)")
 
 	// Marcar flags como requeridas
 	cmd.MarkFlagRequired("title")

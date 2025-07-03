@@ -17,8 +17,9 @@ func NewNoteCmd(note *services.NoteService) *cobra.Command {
 	// Adjuntar subcomandos, pasando las dependencias a cada uno
 	noteCmd.AddCommand(NewAddCmd(note))
 	noteCmd.AddCommand(NewGetCmd(note))
+	noteCmd.AddCommand(NewListCmd(note))
+	noteCmd.AddCommand(NewUpdateCmd(note))
 	noteCmd.AddCommand(NewDeleteCmd(note))
-	// Aquí agregarías los otros comandos como NewListCmd(deps), NewDeleteCmd(deps), NewUpdateCmd(deps)
 
 	return noteCmd
 }

@@ -11,6 +11,7 @@ type NoteRepository interface {
 	Delete(id string) error
 	List() (*[]schemas.NoteDTO, error)
 	Get(id string) (*schemas.NoteResponse, error)
+	GetAllWarn() (*[]schemas.NoteResponse, error)
 }
 
 type NoteService interface {
@@ -19,4 +20,5 @@ type NoteService interface {
 	Delete(id string) error
 	List() (*[]schemas.NoteDTO, error)
 	Get(id string) (*schemas.NoteResponse, error)
+	GetAllWarn() (*[]schemas.NoteResponse, error)
 }

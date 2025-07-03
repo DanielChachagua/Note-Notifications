@@ -10,18 +10,22 @@ func (s *NoteService) Create(note *schemas.NoteCreate) (string, error) {
 	return s.NoteRepository.Create(newID, note)
 }
 
-func Update(note *schemas.NoteUpdate) error {
-	return nil
+func (s *NoteService) Update(note *schemas.NoteUpdate) error {
+	return s.NoteRepository.Update(note)
 }
 
-func Delete(id string) error {
-	return nil
+func (s *NoteService) Delete(id string) error {
+	return s.NoteRepository.Delete(id)
 }
 
-func List() (*[]schemas.NoteDTO, error) {
-	return nil, nil
+func (s *NoteService) List() (*[]schemas.NoteDTO, error) {
+	return s.NoteRepository.List()
 }
 
-func Get(id string) (*schemas.NoteResponse, error) {
-	return nil, nil
+func (s *NoteService) Get(id string) (*schemas.NoteResponse, error) {
+	return s.NoteRepository.Get(id)
+}
+
+func (s *NoteService) GetAllWarn() (*[]schemas.NoteResponse, error) {
+	return s.NoteRepository.GetAllWarn()
 }

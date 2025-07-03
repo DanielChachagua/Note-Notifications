@@ -10,7 +10,7 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "note_notification",
+	Use:   "ntn",
 	Short: "Una CLI para gestionar tus notas y notificaciones",
 	Long:  "Una CLI para gestionar tus notas y notificaciones, ya sea creando, actualizando, listando o eliminando notas",
 }

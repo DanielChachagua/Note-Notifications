@@ -17,7 +17,7 @@ type CustomTime time.Time
 func ToCustomDate(s string) (CustomDate, error) {
 	t, err := time.Parse(layoutDate, s)
 	if err != nil {
-		return CustomDate{}, fmt.Errorf("error en la fecha: %v (esperado formato dd-mm-yyyy)", err)
+		return CustomDate{}, fmt.Errorf("%v (esperado formato dd-mm-yyyy)", err)
 	}
 	return CustomDate(t), nil
 }
@@ -25,7 +25,7 @@ func ToCustomDate(s string) (CustomDate, error) {
 func ToCustomTime(s string) (CustomTime, error) {
 	t, err := time.Parse(layoutTime, s)
 	if err != nil {
-		return CustomTime{}, fmt.Errorf("error en la fecha: %v (esperado formato dd-mm-yyyy)", err)
+		return CustomTime{}, fmt.Errorf("%v (esperado formato hh:mm)", err)
 	}
 	return CustomTime(t), nil
 }
@@ -76,55 +76,4 @@ func (ct CustomTime) ToTime() time.Time {
 }
 
 
-// package schemas
 
-// import (
-// 	"strings"
-// 	"time"
-// )
-
-// type CustomDate time.Time
-// type CustomTime time.Time
-
-// const (
-// 	layoutDate = "02-01-2006"
-// 	layoutTime = "15:04"
-// )
-
-// // Métodos para CustomDate
-// func (cd *CustomDate) UnmarshalJSON(b []byte) error {
-// 	s := strings.Trim(string(b), `"`)
-// 	t, err := time.Parse(layoutDate, s)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	*cd = CustomDate(t)
-// 	return nil
-// }
-
-// func (cd CustomDate) MarshalJSON() ([]byte, error) {
-// 	return []byte(`"` + time.Time(cd).Format(layoutDate) + `"`), nil
-// }
-
-// func (cd CustomDate) ToTime() time.Time {
-// 	return time.Time(cd)
-// }
-
-// // Métodos para CustomTime
-// func (ct *CustomTime) UnmarshalJSON(b []byte) error {
-// 	s := strings.Trim(string(b), `"`)
-// 	t, err := time.Parse(layoutTime, s)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	*ct = CustomTime(t)
-// 	return nil
-// }
-
-// func (ct CustomTime) MarshalJSON() ([]byte, error) {
-// 	return []byte(`"` + time.Time(ct).Format(layoutTime) + `"`), nil
-// }
-
-// func (ct CustomTime) ToTime() time.Time {
-// 	return time.Time(ct)
-// }
