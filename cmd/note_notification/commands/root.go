@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"note_notifications/cmd/note_notification/commands/calendar"
 	"note_notifications/cmd/note_notification/commands/note"
 	"note_notifications/internal/dependencies"
 	"os"
@@ -18,6 +19,7 @@ var rootCmd = &cobra.Command{
 func Execute(deps *dependencies.Container) {
 	// Añadir el comando 'note' y todos sus subcomandos al rootCmd
 	rootCmd.AddCommand(note.NewNoteCmd(deps.Services.Note))
+	rootCmd.AddCommand(calendar.NewCalendarCmd())
 
 	err := rootCmd.Execute()
 	if err != nil {
