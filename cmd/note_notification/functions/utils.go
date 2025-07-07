@@ -9,12 +9,13 @@ import (
 	"os/user"
 	"path/filepath"
 	"runtime"
+	"time"
 
 	"golang.org/x/oauth2"
 	"google.golang.org/api/calendar/v3"
 )
 
-func tokenFile() string {
+func TokenFile() string {
 	usr, _ := user.Current()
 	return filepath.Join(usr.HomeDir, ".credentials", "calendar-go.json")
 }
@@ -35,8 +36,8 @@ func getFreePortInRange(minPort, maxPort int) (int, error) {
 		addr := fmt.Sprintf("localhost:%d", port)
 		listener, err := net.Listen("tcp", addr)
 		if err == nil {
-			listener.Close() 
-			return port, nil 
+			listener.Close()
+			return port, nil
 		}
 	}
 	return 0, fmt.Errorf("no se encontró puerto libre entre %d y %d", minPort, maxPort)
@@ -66,13 +67,13 @@ func openBrowser(url string) error {
 	return cmd.Start()
 }
 
-func eventsFile() string {
+func EventsFile() string {
 	usr, _ := user.Current()
 	return filepath.Join(usr.HomeDir, ".events-calendar", "calendar-events.json")
 }
 
 func saveEvents(events []*calendar.Event) error {
-	path := eventsFile()
+	path := EventsFile()
 
 	// Crear directorio si no existe
 	err := os.MkdirAll(filepath.Dir(path), 0700)
@@ -94,4 +95,41 @@ func saveEvents(events []*calendar.Event) error {
 	}
 
 	return nil
+}
+
+func parseStartTime(e *calendar.Event) time.Time {
+	var layout string
+	var t time.Time
+	var err error
+
+	if e.Start != nil {
+		if e.Start.DateTime != "" {
+			layout = time.RFC3339
+			t, err = time.Parse(layout, e.Start.DateTime)
+		} else if e.Start.Date != "" {
+			layout = "2006-01-02"
+			t, err = time.Parse(layout, e.Start.Date)
+		}
+	}
+	if err != nil {
+		return time.Time{} // valor cero
+	}
+	return t
+}
+
+func FileDoesNotExistOrIsEmpty(path string) (bool, error) {
+	info, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		return true, nil
+	}
+
+	if err != nil {
+		return false, err
+	}
+
+	if info.Size() == 0 {
+		return true, nil
+	}
+
+	return false, nil
 }

@@ -13,3 +13,11 @@ command.txt
 __debug*
 
 credentials.json
+
+documentation.txt
+
+ntn*
+
+*.sh
+
+*.ps1

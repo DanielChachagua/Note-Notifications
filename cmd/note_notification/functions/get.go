@@ -7,16 +7,22 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"time"
 
 	"golang.org/x/oauth2"
 	"google.golang.org/api/calendar/v3"
 )
 
 func GetToken() *oauth2.Token {
-	tokFile := tokenFile()
+	tokFile := TokenFile()
 	tok, err := tokenFromFile(tokFile)
 	if err != nil {
 		tok = GetTokenFromWeb()
+		if tok == nil {
+			log.Fatal("Error al obtener token, cerrando aplicación...")
+			return nil
+		}
 		saveToken(tokFile, tok)
 	}
 	return tok
@@ -29,7 +35,7 @@ func GetTokenFromWeb() *oauth2.Token {
 	}
 
 	redirectURL := fmt.Sprintf("http://localhost:%d/callback", port)
-	log.Println("Usando puerto dinámico:", port)
+	log.Println("Usando puerto dinámico")
 
 	codeCh := make(chan string)
 	srv := &http.Server{Addr: fmt.Sprintf(":%d", port)}
@@ -79,7 +85,16 @@ func GetTokenFromWeb() *oauth2.Token {
 		fmt.Println("Error al abrir el navegador:", err)
 	}
 
-	code := <-codeCh
+	// code := <-codeCh
+	var code string
+	select {
+	case code = <-codeCh:
+		log.Println("Código recibido")
+	case <-time.After(30 * time.Second):
+		fmt.Println("⏱️ Tiempo de espera agotado. No se recibió respuesta de autenticación.")
+		_ = srv.Shutdown(context.Background())
+		return nil
+	}
 
 	log.Println("Code:", code)
 
@@ -120,7 +135,7 @@ func GetEvents() (*[]*calendar.Event, error) {
 	defer events.Body.Close()
 
 	var result struct {
-			Items []*calendar.Event `json:"items"`
+		Items []*calendar.Event `json:"items"`
 	}
 
 	if err := json.NewDecoder(events.Body).Decode(&result); err != nil {
@@ -133,4 +148,19 @@ func GetEvents() (*[]*calendar.Event, error) {
 	}
 
 	return &result.Items, nil
+}
+
+func GetEventsFromFile() (*[]*calendar.Event, error) {
+	jsonEvents, err := os.ReadFile(EventsFile())
+	if err != nil {
+		return nil, fmt.Errorf("error al leer archivo: %w", err)
+	}
+
+	var events []*calendar.Event
+	err = json.Unmarshal([]byte(jsonEvents), &events)
+	if err != nil {
+		return nil, fmt.Errorf("error al obtener eventos: %w", err)
+	}
+
+	return &events, nil
 }

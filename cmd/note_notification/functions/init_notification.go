@@ -16,7 +16,13 @@ func InitNotifications() error {
 			if date == "" {
 				date = item.Start.Date
 			}
-			fmt.Printf("%v - %s\n", date, item.Summary)
+
+			end := item.End.DateTime
+			if end == "" {
+				end = item.End.Date
+			}
+
+			fmt.Printf("%v - %v - %s\n", date, end, item.Summary)
 			
 			fmt.Printf("%+v\n", item)
 		}

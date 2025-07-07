@@ -1,22 +1,25 @@
 package calendar
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
-	"note_notifications/internal/schemas"
-
 	"github.com/spf13/cobra"
+	cal "google.golang.org/api/calendar/v3"
+	"net/http"
+	"note_notifications/cmd/note_notification/functions"
+	"note_notifications/internal/schemas"
 )
 
 // NewAddCmd crea el comando para agregar una nueva nota.
 // Recibe el contenedor de dependencias para acceder a los servicios necesarios.
 func NewAddCmd() *cobra.Command {
 	var ( // Declarar variables para almacenar los valores de las flags
-		title    string
-		description    string
-		url         string
-		dateStr     string
-		timeStr     string
-		warn string
+		summary     string
+		location    string
+		description string
+		date        string
+		time        string
 	)
 
 	cmd := &cobra.Command{
@@ -26,60 +29,86 @@ func NewAddCmd() *cobra.Command {
 		Args:  cobra.NoArgs, // No esperamos argumentos posicionales
 		Run: func(cmd *cobra.Command, args []string) {
 
-			warnValue := true
-			if warn != "" {
-				warnValue = warn == "true" || warn == "1" || warn == "t"
-			} else if warn != "true" && warn != "false" && warn != "1" && warn != "0" && warn != "t" && warn != "f" {
-				fmt.Println("Error: El valor de --warn debe ser 'true', 'false', '1', '0', 't' o 'f'.")
-				cmd.Help()
-				return
-			}
-
-			// 1. Parsear y validar datos de las flags
-			tDate, err := schemas.ToCustomDate(dateStr)
+			tDate, err := schemas.ToCustomDate(date)
 			if err != nil {
 				fmt.Printf("Error en la fecha: %v\n", err)
 				return
 			}
 
-			tTime, err := schemas.ToCustomTime(timeStr)
-			if err != nil {
-				fmt.Printf("Error en la hora: %v\n", err)
-				return
+			var tTime schemas.CustomTime
+			if time != "" {
+				tTime, err = schemas.ToCustomTime(time)
+				if err != nil {
+					fmt.Printf("Error en la hora: %v\n", err)
+					return
+				}
 			}
 
-			noteData := schemas.NoteCreate{
-				Title:       title,
-				Description: description,
-				Url:         &url, // La URL puede ser opcional, por eso se pasa su puntero
+			calendar := schemas.CalendarCreate{
+				Summary:     summary,
+				Location:    &location,
+				Description: &description,
 				Date:        tDate,
-				Time:        tTime,
-				Warn: warnValue,
 			}
 
-			if err := noteData.Validate(); err != nil {
+			if tTime.ToTime().IsZero() {
+				calendar.Time = nil
+			} else {
+				calendar.Time = &tTime
+			}
+
+			if err := calendar.Validate(); err != nil {
 				fmt.Println(err)
 				return
 			}
 
-			// 2. Usar el servicio del contenedor de dependencias
-			
+			token := functions.GetToken()
+
+			calendarCreate := schemas.CreateEvent{
+				Token: token,
+				Event: calendar,
+			}
+
+			var created struct {
+				Event *cal.Event `json:"event"`
+			}
+
+			calendarData, err := json.Marshal(calendarCreate)
+			if err != nil {
+				fmt.Printf("error al codificar el token: %v", err)
+			} else {
+				response, err := http.Post("http://localhost:3000/calendar/create", "application/json", bytes.NewReader(calendarData))
+				if err != nil {
+					fmt.Printf("error al obtener los eventos: %v", err)
+				}
+				defer response.Body.Close()
+
+				err = json.NewDecoder(response.Body).Decode(&created)
+				if err != nil {
+					fmt.Printf("Error al decodificar JSON: %v", err)
+				}
+
+				err = functions.AddEvent(created.Event)
+				if err != nil {
+					fmt.Printf("Error al agregar el evento localmente: %v", err)
+					fmt.Print("\nActualice manualmente el la memoria local con el comando 'ntn calendar update'")
+				}
+
+				fmt.Println("Evento creado exitosamente")
+			}
 		},
 	}
 
 	// Definir las flags para el comando 'add'
-	cmd.Flags().StringVarP(&title, "title", "n", "", "Título de la nota (requerido)")
-	cmd.Flags().StringVarP(&description, "description", "b", "", "Descripción de la nota (requerido)")
-	cmd.Flags().StringVarP(&url, "url", "u", "", "URL asociada a la nota (opcional)")
-	cmd.Flags().StringVarP(&dateStr, "date", "d", "", "Fecha de la nota en formato dd-mm-yyyy (requerido)")
-	cmd.Flags().StringVarP(&timeStr, "time", "t", "", "Hora de la nota en formato hh:mm (requerido)")
-	cmd.Flags().StringVarP(&warn, "warn", "w", "", "Warn(aviso) de la nota (opcional)")
+	cmd.Flags().StringVarP(&summary, "summary", "s", "", "Título de la nota (requerido)")
+	cmd.Flags().StringVarP(&location, "location", "l", "", "URL asociada a la nota (opcional)")
+	cmd.Flags().StringVarP(&description, "description", "d", "", "Descripción de la nota (opcional)")
+	cmd.Flags().StringVarP(&date, "date", "D", "", "Fecha de la nota en formato dd-mm-yyyy (requerido)")
+	cmd.Flags().StringVarP(&time, "time", "T", "", "Hora de la nota en formato hh:mm (opcional)")
 
 	// Marcar flags como requeridas
-	cmd.MarkFlagRequired("title")
-	cmd.MarkFlagRequired("description")
+	cmd.MarkFlagRequired("summary")
 	cmd.MarkFlagRequired("date")
-	cmd.MarkFlagRequired("time")
 
 	return cmd
 }

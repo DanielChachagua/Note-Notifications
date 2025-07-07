@@ -1,0 +1,57 @@
+package calendar
+
+import (
+	"fmt"
+	"note_notifications/cmd/note_notification/functions"
+	"os"
+
+	"github.com/olekukonko/tablewriter"
+	"github.com/spf13/cobra"
+)
+
+// NewListCmd crea el comando para listar todas las notas.
+// Recibe el contenedor de dependencias para acceder a los servicios necesarios.
+func NewUpdateListCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "update",
+		Short: "Actualiza la lista local de los eventos",
+		Long:  "Actualiza la lista local de los eventos de Google Calendar.",
+		Args:  cobra.NoArgs, // No esperamos argumentos posicionales
+		Run: func(cmd *cobra.Command, args []string) {
+
+			events, err := functions.GetEvents()
+			if err != nil {
+				fmt.Printf("Error al listar las notas: %v\n", err)
+				return
+			}
+
+			if len(*events) == 0 {
+				fmt.Println("No hay eventos para mostrar.")
+				return
+			}
+
+			table := tablewriter.NewTable(os.Stdout,
+				tablewriter.WithHeader([]string{"ID", "Summary", "Description", "Start"}),
+			)
+
+			for _, e := range *events {
+				// Usar Start.DateTime o Start.Date según el tipo de evento
+				date := e.Start.DateTime
+				if date == "" {
+					date = e.Start.Date
+				}
+
+				table.Append([]string{
+					e.Id,
+					e.Summary,
+					e.Description,
+					date,
+				})
+			}
+
+			table.Render()
+		},
+	}
+
+	return cmd
+}

@@ -1,113 +1,79 @@
 # NoteNotification CLI (`ntn`)
 
-`ntn` es una herramienta de línea de comandos (CLI) construida en Go para gestionar notas y programar notificaciones. Te permite crear, listar y actualizar notas directamente desde tu terminal.
+`ntn` is a command-line tool (CLI) built in Go to manage events in your Google Calendar. It allows you to create, list, update, and delete events directly from your terminal.
 
-Este proyecto utiliza Cobra para la estructura de los comandos y Tablewriter para mostrar las listas de forma ordenada.
+This project uses Cobra for the command structure and Tablewriter to display lists in an orderly manner.
 
-## Características Principales
+## Main Features
 
-- **Crear notas**: Añade nuevas notas con título, descripción, fecha, hora y una URL opcional.
-- **Listar notas**: Visualiza todas tus notas en una tabla bien formateada en la consola.
-- **Actualizar notas**: Modifica los detalles de una nota existente usando su ID.
-- **Integración con Google Calendar**: La CLI se autentica de forma segura con tu cuenta de Google para poder gestionar eventos y notificaciones (basado en el código de `jobs/calendar.go`).
+- **Create events**: Add new events with summary, description, location, date, and time.
+- **List events**: View all your upcoming events in a well-formatted table in the console.
+- **Update events**: Modify the details of an existing event using its ID.
+- **Delete events**: Remove one or more events from your calendar.
+- **Google Calendar Integration**: The CLI securely authenticates with your Google account to manage events and notifications.
+- **Background Service**: Automatically runs in the background to handle notifications and keep events updated.
 
-## Requisitos Previos
+## Installation
 
-1.  **Go**: Asegúrate de tener Go 1.18 o una versión superior instalada.
-2.  **Credenciales de Google API**: Para la funcionalidad de calendario, necesitas credenciales de la API de Google.
+Choose the command for your operating system. The installer will download the latest version of `ntn`, place it in the appropriate system directory, and set it up as a background service.
 
-    - Ve a la Google Cloud Console.
-    - Crea un nuevo proyecto o selecciona uno existente.
-    - En el menú de navegación, ve a **APIs & Services > Library**.
-    - Busca y habilita la **Google Calendar API**.
-    - Ve a **APIs & Services > Credentials**.
-    - Haz clic en **Create Credentials > OAuth client ID**.
-    - Selecciona **Desktop app** como tipo de aplicación.
-    - Descarga el archivo JSON con las credenciales. Es importante que lo renombres a `credentials.json` y lo coloques en la raíz del proyecto para que el job de calendario pueda encontrarlo.
+**Note:** You will need to download the appropriate binary (`ntn` or `ntn.exe`) and the installer script from the [latest release on GitHub](https://github.com/DanielChachagua/NoteNotification/releases/latest) and run them from the same directory.
 
-## Instalación
+### Linux & macOS
 
-1.  **Clona el repositorio:**
-    ```sh
-    git clone <URL_DEL_REPOSITORIO>
-    cd <NOMBRE_DEL_DIRECTORIO>
-    ```
+Open your terminal and run the following command. It will ask for your password to install the application system-wide.
 
-2.  **Construye el ejecutable:**
-    Puedes construir el binario y nombrarlo `ntn` para un uso más fácil.
-    ```sh
-    go build -o ntn ./cmd/note_notification
-    ```
-
-3.  **Mueve el binario a tu PATH (Opcional):**
-    Para poder ejecutar `ntn` desde cualquier lugar, mueve el binario a un directorio incluido en tu `PATH`.
-    ```sh
-    # Para Linux/macOS
-    sudo mv ntn /usr/local/bin/
-
-    # Para Windows, muévelo a una carpeta que esté en tus variables de entorno.
-    ```
-
-## Uso
-
-La estructura general de los comandos es `ntn note <subcomando> [flags]`.
-
-### Autenticación (Primer Uso)
-
-La primera vez que ejecutes un comando que requiera acceso a Google Calendar, se iniciará un proceso de autenticación:
-1.  Se abrirá una pestaña en tu navegador pidiéndote que inicies sesión y autorices el acceso a tu calendario.
-2.  Después de autorizar, serás redirigido y la CLI guardará un token de acceso en tu directorio de usuario (`~/.credentials/calendar-go.json`) para futuras sesiones.
-
-### Comandos y Ejemplos
-
-#### `add` - Crear una nueva nota
-
-Crea una nota con los detalles especificados.
-
-```sh
-# Ejemplo básico
-ntn note add --title "Reunión de equipo" --description "Discutir el sprint actual" --date "28-11-2024" --time "10:30"
-
-# Ejemplo con URL y aviso desactivado
-ntn note add -n "Comprar dominio" -b "Buscar y comprar el dominio para el proyecto" -d "29-11-2024" -t "15:00" -u "https://dominios.com" -w "false"
+```bash
+# Make sure install.sh and the 'ntn' binary are in the same directory
+chmod +x install.sh
+sudo ./install.sh
 ```
 
-**Flags:**
-- `-n`, `--title` (string, **requerido**): Título de la nota.
-- `-b`, `--description` (string, **requerido**): Descripción de la nota.
-- `-d`, `--date` (string, **requerido**): Fecha en formato `dd-mm-yyyy`.
-- `-t`, `--time` (string, **requerido**): Hora en formato `hh:mm`.
-- `-u`, `--url` (string, opcional): URL asociada.
-- `-w`, `--warn` (string, opcional): Activar/desactivar aviso (`true`/`false`). Por defecto es `true`.
+### Windows
 
----
+Open **PowerShell as Administrator** and run the following command:
 
-#### `list` - Listar todas las notas
-
-Muestra una tabla con todas las notas guardadas.
-
-```sh
-ntn note list
+```powershell
+# Make sure install.ps1 and 'ntn.exe' are in the same directory
+Set-ExecutionPolicy Bypass -Scope Process -Force; .\install.ps1
 ```
 
----
+## Usage
 
-#### `update` - Actualizar una nota existente
+Once installed, the `ntn` command will be available globally in your terminal.
 
-Actualiza los campos de una nota existente, identificada por su ID.
+The general structure of the commands is `ntn calendar <subcommand> [flags]`.
 
-```sh
-# Para actualizar solo el título de una nota
-ntn note update --id "ID_DE_LA_NOTA" --title "Nuevo título para la reunión"
+### Authentication (First Use)
+
+The first time you run a command that requires access to Google Calendar, an authentication process will be initiated:
+1.  A tab will open in your browser asking you to log in and authorize access to your calendar.
+2.  After authorizing, you will be redirected, and the CLI will save an access token in your user directory for future sessions.
+
+### Commands
+
+- `ntn calendar login`: Authenticates with your Google account.
+- `ntn calendar logout`: Removes the stored authentication token.
+- `ntn calendar add`: Creates a new event.
+- `ntn calendar list`: Lists all upcoming events.
+- `ntn calendar put`: Updates an existing event.
+- `ntn calendar rm`: Deletes one or more events.
+- `ntn calendar update`: Forces an update of the local event cache.
+
+For detailed flags for each command, you can use `ntn calendar <subcommand> --help`.
+
+## Uninstallation
+
+To completely remove `ntn` and its background service from your system, use the corresponding uninstaller script.
+
+### Linux & macOS
+
+```bash
+# Make sure uninstall.sh is in the current directory
+chmod +x uninstall.sh
+sudo ./uninstall.sh
 ```
 
-**Flags:**
-- `-i`, `--id` (string, **requerido**): ID de la nota a actualizar.
-- `-n`, `--title` (string, opcional): Nuevo título.
-- `-b`, `--description` (string, opcional): Nueva descripción.
-- `-d`, `--date` (string, opcional): Nueva fecha (`dd-mm-yyyy`).
-- `-t`, `--time` (string, opcional): Nueva hora (`hh:mm`).
-- `-u`, `--url` (string, opcional): Nueva URL.
-- `-w`, `--warn` (string, opcional): Nuevo estado del aviso (`true`/`false`).
+### Windows
 
----
+*A dedicated uninstaller script for Windows (`uninstall.ps1`) can be created to remove the application, PATH entries, and the scheduled task.*
