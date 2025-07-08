@@ -21,6 +21,7 @@ func Execute() {
 	// Añadir el comando 'note' y todos sus subcomandos al rootCmd
 	// rootCmd.AddCommand(note.NewNoteCmd(deps.Services.Note))
 	rootCmd.AddCommand(calendar.NewCalendarCmd())
+	rootCmd.AddCommand(serveCmd)
 
 	err := rootCmd.Execute()
 	if err != nil {

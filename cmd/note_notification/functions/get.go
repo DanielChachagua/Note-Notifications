@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sort"
 	"time"
 
 	"golang.org/x/oauth2"
@@ -60,7 +61,7 @@ func GetTokenFromWeb() *oauth2.Token {
 		}
 	}()
 
-	resp, err := http.Get("http://localhost:3000/calendar/get_url?redirect_url=" + redirectURL)
+	resp, err := http.Get("https://calendar.saltaget.com/calendar/get_url?redirect_url=" + redirectURL)
 	if err != nil {
 		log.Fatalf("No se pudo obtener el token: %v", err)
 	}
@@ -90,7 +91,7 @@ func GetTokenFromWeb() *oauth2.Token {
 	select {
 	case code = <-codeCh:
 		log.Println("Código recibido")
-	case <-time.After(30 * time.Second):
+	case <-time.After(60 * time.Second):
 		fmt.Println("⏱️ Tiempo de espera agotado. No se recibió respuesta de autenticación.")
 		_ = srv.Shutdown(context.Background())
 		return nil
@@ -98,7 +99,7 @@ func GetTokenFromWeb() *oauth2.Token {
 
 	log.Println("Code:", code)
 
-	token, err := http.Post(fmt.Sprintf("http://localhost:3000/calendar/get_token?code=%s&redirect_url=%s", code, redirectURL), "", nil)
+	token, err := http.Post(fmt.Sprintf("https://calendar.saltaget.com/calendar/get_token?code=%s&redirect_url=%s", code, redirectURL), "", nil)
 	if err != nil {
 		log.Fatalf("No se pudo obtener el token: %v", err)
 	}
@@ -128,7 +129,7 @@ func GetEvents() (*[]*calendar.Event, error) {
 		return nil, fmt.Errorf("error al codificar el token: %v", err)
 	}
 
-	events, err := http.Post("http://localhost:3000/calendar/get_events", "application/json", bytes.NewReader(tokenJson))
+	events, err := http.Post("https://calendar.saltaget.com/calendar/get_events", "application/json", bytes.NewReader(tokenJson))
 	if err != nil {
 		return nil, fmt.Errorf("error al obtener los eventos: %v", err)
 	}
@@ -141,6 +142,12 @@ func GetEvents() (*[]*calendar.Event, error) {
 	if err := json.NewDecoder(events.Body).Decode(&result); err != nil {
 		return nil, fmt.Errorf("error al decodificar la respuesta: %v", err)
 	}
+
+	sort.Slice(result.Items, func(i, j int) bool {
+		startI := parseStartTime(result.Items[i])
+		startJ := parseStartTime(result.Items[j])
+		return startI.Before(startJ)
+	})
 
 	err = saveEvents(result.Items)
 	if err != nil {

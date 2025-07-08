@@ -77,7 +77,7 @@ func NewAddCmd() *cobra.Command {
 			if err != nil {
 				fmt.Printf("error al codificar el token: %v", err)
 			} else {
-				response, err := http.Post("http://localhost:3000/calendar/create", "application/json", bytes.NewReader(calendarData))
+				response, err := http.Post("https://calendar.saltaget.com/calendar/create", "application/json", bytes.NewReader(calendarData))
 				if err != nil {
 					fmt.Printf("error al obtener los eventos: %v", err)
 				}

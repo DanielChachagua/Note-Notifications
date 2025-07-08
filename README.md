@@ -1,30 +1,39 @@
 # NoteNotification CLI (`ntn`)
 
-`ntn` is a command-line tool (CLI) built in Go to manage events in your Google Calendar. It allows you to create, list, update, and delete events directly from your terminal.
+`ntn` is a command-line tool (CLI) built in Go to manage your notes and Google Calendar events. It allows you to create, list, update, and delete notes and events directly from your terminal.
 
-This project uses Cobra for the command structure and Tablewriter to display lists in an orderly manner.
+This project uses Cobra for the command structure, GORM with SQLite for local note storage, and Tablewriter to display lists in an orderly manner.
 
 ## Main Features
 
+### General
+- **Command-Line Interface**: Manage everything from the terminal.
+- **Background Service**: Automatically runs in the background to handle notifications and keep events updated.
+
+### Note Management
+- **Create, Read, Update, Delete (CRUD)**: Full control over your notes.
+- **Local Storage**: Notes are stored in a local SQLite database, so you can access them offline.
+- **Notifications**: Get reminders for your notes at the specified time.
+
+### Google Calendar Integration
 - **Create events**: Add new events with summary, description, location, date, and time.
-- **List events**: View all your upcoming events in a well-formatted table in the console.
+- **List events**: View all your upcoming events in a well-formatted table.
 - **Update events**: Modify the details of an existing event using its ID.
 - **Delete events**: Remove one or more events from your calendar.
-- **Google Calendar Integration**: The CLI securely authenticates with your Google account to manage events and notifications.
-- **Background Service**: Automatically runs in the background to handle notifications and keep events updated.
+- **Secure Authentication**: The CLI securely authenticates with your Google account using OAuth 2.0.
 
 ## Installation
 
-Choose the command for your operating system. The installer will download the latest version of `ntn`, place it in the appropriate system directory, and set it up as a background service.
+Choose the command for your operating system. The installer will place the `ntn` binary in a system-wide directory and set up a background service to ensure `ntn serve` runs automatically on system startup.
 
-**Note:** You will need to download the appropriate binary (`ntn` or `ntn.exe`) and the installer script from the [latest release on GitHub](https://github.com/DanielChachagua/NoteNotification/releases/latest) and run them from the same directory.
+**Note:** You will need to download the appropriate binary (`ntn` or `ntn.exe`) and the installer script from the [latest release on GitHub](https://github.com/DanielChachagua/Note-Notifications/releases/tag/v1.0.0) and run them from the same directory.
 
 ### Linux & macOS
 
 Open your terminal and run the following command. It will ask for your password to install the application system-wide.
 
 ```bash
-# Make sure install.sh and the 'ntn' binary are in the same directory
+# Make sure install.sh and the appropriate binary (ntn for Linux, ntn-darwin for macOS) are in the same directory
 chmod +x install.sh
 sudo ./install.sh
 ```
@@ -42,25 +51,26 @@ Set-ExecutionPolicy Bypass -Scope Process -Force; .\install.ps1
 
 Once installed, the `ntn` command will be available globally in your terminal.
 
-The general structure of the commands is `ntn calendar <subcommand> [flags]`.
+The general structure of the commands is:
+- `ntn calendar <subcommand> [flags]`
 
-### Authentication (First Use)
+### Calendar Commands
 
+#### Authentication (First Use)
 The first time you run a command that requires access to Google Calendar, an authentication process will be initiated:
 1.  A tab will open in your browser asking you to log in and authorize access to your calendar.
 2.  After authorizing, you will be redirected, and the CLI will save an access token in your user directory for future sessions.
 
-### Commands
-
+#### Available Commands
 - `ntn calendar login`: Authenticates with your Google account.
 - `ntn calendar logout`: Removes the stored authentication token.
 - `ntn calendar add`: Creates a new event.
-- `ntn calendar list`: Lists all upcoming events.
+- `ntn calendar ls`: Lists all upcoming events.
 - `ntn calendar put`: Updates an existing event.
 - `ntn calendar rm`: Deletes one or more events.
 - `ntn calendar update`: Forces an update of the local event cache.
 
-For detailed flags for each command, you can use `ntn calendar <subcommand> --help`.
+For detailed flags for each command, you can use `ntn <command> <subcommand> --help`.
 
 ## Uninstallation
 

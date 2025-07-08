@@ -39,7 +39,7 @@ func NewDeleteCmd() *cobra.Command {
 				return
 			}
 
-			response, err := http.Post("http://localhost:3000/calendar/delete", "application/json", bytes.NewReader([]byte(jsonData)))
+			response, err := http.Post("https://calendar.saltaget.com/calendar/delete", "application/json", bytes.NewReader([]byte(jsonData)))
 			if err != nil {
 				fmt.Printf("Error al eliminar las notas: %v\n", err)
 				return

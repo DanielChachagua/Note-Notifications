@@ -88,7 +88,7 @@ func NewUpdateCmd() *cobra.Command {
 				return
 			}
 
-			response, err := http.Post("http://localhost:3000/calendar/update", "application/json", bytes.NewReader([]byte(calendarData)))
+			response, err := http.Post("https://calendar.saltaget.com/calendar/update", "application/json", bytes.NewReader([]byte(calendarData)))
 			if err != nil {
 				fmt.Printf("Error al actualizar la nota: %v\n", err)
 				return
