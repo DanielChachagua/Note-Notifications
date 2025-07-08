@@ -26,7 +26,7 @@ This project uses Cobra for the command structure, GORM with SQLite for local no
 
 Choose the command for your operating system. The installer will place the `ntn` binary in a system-wide directory and set up a background service to ensure `ntn serve` runs automatically on system startup.
 
-**Note:** You will need to download the appropriate binary (`ntn` or `ntn.exe`) and the installer script from the [latest release on GitHub](https://github.com/DanielChachagua/Note-Notifications/releases/tag/v1.0.0) and run them from the same directory.
+**Note:** You will need to download the appropriate binary (`ntn` or `ntn.exe`) and the installer script from the https://github.com/DanielChachagua/Note-Notifications/releases/tag/v1.0.0 and run them from the same directory.
 
 ### Linux & macOS
 
